@@ -41,6 +41,7 @@ Because of the version bump to `go`, the macOS build for this release requires a
 1. [21951](https://github.com/influxdata/influxdb/pull/21951): Prevent silently dropped writes when there are overlapping shards.
 1. [21955](https://github.com/influxdata/influxdb/pull/21955): Invalid requests to `/api/v2` subroutes now return 404 instead of a list of links.
 1. [21977](https://github.com/influxdata/influxdb/pull/21977): Flux metaqueries for `_field` take fast path if `_measurement` is the only predicate.
+1. [22052](https://github.com/influxdata/influxdb/pull/22052): Handle https in systemd wrapper, and prevent it from looping forever
 
 ## v2.0.7 [2021-06-04]
 ----------------------
