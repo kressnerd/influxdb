@@ -77,7 +77,8 @@ jobs:
               apply \
                 -auto-approve \
                 -var package_path=${DEBNAME} \
-                -var instance_name=circleci-terraform-${CIRCLE_SHA1}
+                -var instance_name=circleci-terraform-${CIRCLE_SHA1} \
+                -var additional_files_dir=${PWD}/scripts/ci/tests/
       - run:
           name: Install deb
           command: |
@@ -87,9 +88,15 @@ jobs:
             sudo apt-get update && sudo apt-get install -y /home/ubuntu/influxdb.deb
             EOF
       - run:
+          name: Run tests
+          command: |
+            set -x
+            export ec2_ip=$(terraform -chdir=scripts/ci output -raw test_node_ssh)
+            ssh -o "StrictHostKeyChecking=no" ubuntu@$ec2_ip 'for file in $(find /home/ubuntu/files/ -maxdepth 1 -mindepth 1); do sudo ./$file; done'
+      - run:
           name: Test default config
           command: |
-            set -xe
+            set -x
             export ec2_ip=$(terraform -chdir=scripts/ci output -raw test_node_ssh)
             ssh -o "StrictHostKeyChecking=no" ubuntu@$ec2_ip \<< EOF
             sudo service influxdb start
@@ -98,7 +105,7 @@ jobs:
       - run:
           name: Test https with self-signed certs
           command: |
-            set -xe
+            set -x
             export ec2_ip=$(terraform -chdir=scripts/ci output -raw test_node_ssh)
             ssh -o "StrictHostKeyChecking=no" ubuntu@$ec2_ip \<< EOF
             sudo sed -i 's/  # https-enabled = false/  https-enabled = true/' /etc/influxdb/influxdb.conf
@@ -111,22 +118,6 @@ jobs:
             sudo sed -i 's/  https-enabled/  # https-enabled/' /etc/influxdb/influxdb.conf
             sudo sed -i 's|  https-certificate|  # https-certificate|' /etc/influxdb/influxdb.conf
             sudo sed -i 's|  https-private-key = ""|  # https-private-key|' /etc/influxdb/influxdb.conf
-            EOF
-      - run:
-          name: Test http with auth enabled
-          command: |
-            set -xe
-            export ec2_ip=$(terraform -chdir=scripts/ci output -raw test_node_ssh)
-            ssh -o "StrictHostKeyChecking=no" ubuntu@$ec2_ip \<< EOF
-            sudo service start influxdb
-            sudo sed -i 's/  # auth-enabled = false/  auth-enabled = true/' /etc/influxdb/influxdb.conf
-            sudo sed -i 's/  # ping-auth-enabled = false/  ping-auth-enabled = true/' /etc/influxdb/influxdb.conf
-            influx -execute "CREATE USER admin WITH PASSWORD 'thisisnotarealpassword' WITH ALL PRIVILEGES"
-            sudo service influxdb stop
-            sudo service influxdb start
-            sudo service influxdb stop
-            sudo sed -i 's/  auth-enabled/  # auth-enabled/' /etc/influxdb/influxdb.conf
-            sudo sed -i 's/  ping-auth-enabled/  # ping-auth-enabled/' /etc/influxdb/influxdb.conf
             EOF
       - run:
           name: Terraform destroy
