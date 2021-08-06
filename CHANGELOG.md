@@ -10,6 +10,7 @@ v1.9.4 [unreleased]
 -	[#21988](https://github.com/influxdata/influxdb/pull/21988): fix: systemd-start script should be executable by group and others
 -	[#21993](https://github.com/influxdata/influxdb/pull/21993): fix: restore portable backup bug
 -	[#22058](https://github.com/influxdata/influxdb/pull/22058): fix: copy names from mmapped memory before closing iterator
+-	[#22091](https://github.com/influxdata/influxdb/pull/22091): fix: systemd service -- handle https, 40x, and block indefinitely
 
 v1.9.3 [unreleased]
 
